@@ -1,6 +1,6 @@
 import csv
-import escola
 import time
+import models.school as sch
 
 from selenium import webdriver
 from selenium.webdriver import Keys
@@ -8,39 +8,53 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
+#Funcao para pegar uma coluna específica no .csv
 def get_column_of_csv(filename, column):
-    with open("./challenge_01/base_dados_teste.csv", "r", encoding='utf8') as stream:
-        reader = csv.DictReader(stream)
+    with open(filename, "r", encoding='utf8') as stream:
+        reader = csv.DictReader(stream, delimiter=";")
         for row in reader:
             yield row[column]
 
-servico = Service(ChromeDriverManager().install())
-navegador = webdriver.Chrome(service=servico)
-colegio = escola.Escola
-lista_escolas = []
-escolas = ["Escola Test"]
+service = Service(ChromeDriverManager().install())
+browser = webdriver.Chrome(service=service)
+school = sch.School
 
-for name in get_column_of_csv('./challenge_01/base_dados_teste.csv', "Nome da Escola"):
-    escolas.append(name)
+schools_list = []
+schools_not_found = []
+schools = []
+
+i = 0
+for name in get_column_of_csv('./challenge_01/files/escolas_ms.csv', 'Escola'):
+    schools.append(name)
+    i += 1
+    if(i==5):
+        break
     
-for escola in escolas:
-    print(escola)
-    
-for escola in escolas:
+# Trecho de automação das pesquisas no Google
+for school in schools:
     try:
-        navegador.get("https://www.google.com")
-        navegador.find_element(By.XPATH, '//*[@id="APjFqb"]').clear()
-        navegador.find_element(By.XPATH, '//*[@id="APjFqb"]').send_keys(escola.format(str) + Keys.RETURN)
-        nome_escola = navegador.find_element(By.CSS_SELECTOR, ".qrShPb").text
-        endereco_escola = navegador.find_element(By.CSS_SELECTOR, ".LrzXr").text
-        lista_escolas.append(colegio(nome_escola=nome_escola, endereco_escola=endereco_escola))
-        
+        browser.get("https://www.google.com")
+        browser.find_element(By.XPATH, '//*[@id="APjFqb"]').clear()
+        browser.find_element(By.XPATH, '//*[@id="APjFqb"]').send_keys(school.format(str) + Keys.RETURN)
+        name = browser.find_element(By.CSS_SELECTOR, ".qrShPb").text
+        adress = browser.find_element(By.CSS_SELECTOR, ".LrzXr").text
+        telephone = browser.find_element(By.CSS_SELECTOR, '.zdqRlf').text
+        schools_list.append(school(name=name, adress=adress, telephone=telephone, status=True))
+        #time.sleep(3)
     except:
-        print('Erro!')
+        name = browser.find_element(By.XPATH, '//*[@id="APjFqb"]').text
+        schools_not_found.append(name)
 
-with open('challenge_01/base_nova.csv', 'w', newline='', encoding='utf-8') as csvfile:
-    csv.writer(csvfile).writerow(["Nome da Escola", "Endereço"])
-    for escola in lista_escolas:
-        csv.writer(csvfile).writerow([escola.nome_escola, escola.endereco_escola])
+# Aqui salva o array das buscas realizadas com sucesso
+with open('challenge_01/files/base_nova.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    csv.writer(csvfile).writerow(["Nome da Escola", "Endereço", "Telefone", "Status"])
+    for school in schools_list:
+        csv.writer(csvfile).writerow([school.name, school.adress, school.telephone, school.status])
         
-            
+# Aqui salva o array das buscas sem sucesso
+with open('challenge_01/files/escolas_nao_salva.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    csv.writer(csvfile).writerow(["Nome da Escola"])
+    for school in schools_not_found:
+        csv.writer(csvfile).writerow([school])
+        
+        
