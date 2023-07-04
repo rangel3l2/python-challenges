@@ -1,6 +1,8 @@
 import csv
 import time
 import models.school as sch
+from parsel import Selector
+from parsel import css2xpath
 
 from selenium import webdriver
 from selenium.webdriver import Keys
@@ -28,10 +30,9 @@ i = 0
 for name in get_column_of_csv('./challenge_01/files/escolas_ms.csv', keys):
     schools.append(name)
     i += 1
-    if(i==50):
+    if(i==1):
         break
     
-print(schools)
 # Trecho de automação das pesquisas no Google
 for item in schools:
     try:
@@ -58,3 +59,14 @@ with open('challenge_01/files/escolas_nao_salva.csv', 'w', newline='', encoding=
     csv.writer(csvfile).writerow(["Nome da Escola"])
     for item in schools_not_found:
         csv.writer(csvfile).writerow([item])
+
+# Lógica de busca no Google Maps das escolas encontradas (dados mocados)
+browser.get("https://www.google.com.br/maps/search/escolas+publicas+em+tres+lagoas+ms/@-20.7735345,-51.715064,15z/data=!3m1!4b1?entry=ttu")
+page_content = browser.page_source
+response = Selector(page_content)
+
+css2xpath('div.Nv2PK')
+results = response.xpath("descendant-or-self::div[@class and contains(concat(' ', normalize-space(@class), ' '), ' Nv2PK ')]")
+
+for item in results:
+    print(item.attrib.get('aria-label'))
