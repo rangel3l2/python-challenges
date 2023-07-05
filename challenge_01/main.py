@@ -9,6 +9,8 @@ from selenium.webdriver import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import NoSuchElementException
 
 #Funcao para pegar uma coluna específica no .csv
 def get_column_of_csv(filename, column=[]):
@@ -62,6 +64,20 @@ with open('challenge_01/files/escolas_nao_salva.csv', 'w', newline='', encoding=
 
 # Lógica de busca no Google Maps das escolas encontradas (dados mocados)
 browser.get("https://www.google.com.br/maps/search/escolas+publicas+em+tres+lagoas+ms/@-20.7735345,-51.715064,15z/data=!3m1!4b1?entry=ttu")
+
+# Localizar o elemento da coluna de escolas
+coluna_escolas = browser.find_element(By.XPATH, "/html/body/div[3]/div[9]/div[9]/div/div/div[1]/div[2]/div/div[1]/div/div/div[2]/div[1]")
+
+# Rolar a coluna de escolas
+for _ in range(50):  # Rolar 5 vezes (ajuste conforme necessário)
+    try:
+        if(browser.find_element(By.CSS_SELECTOR, ".HlvSq") is None):
+            break    
+    except NoSuchElementException:
+        coluna_escolas.send_keys(Keys.END)
+        time.sleep(2)  # Aguardar um segundo entre as rolagens    
+
+# Extrair informações das escolas encontradas
 page_content = browser.page_source
 response = Selector(page_content)
 
