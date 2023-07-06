@@ -19,6 +19,7 @@ srv = Service(ChromeDriverManager().install())
 browser = webdriver.Chrome(service=srv)
 schl = sch.School
 
+
 path_to_csv = "./challenge_01/files/"
 schools_list = []
 schools_not_found = []
@@ -98,7 +99,7 @@ def extract_info_by_maps_google():
     with open(path_to_csv + 'schools_found_google_maps.csv', 'a', newline='', encoding='utf8') as csvfile:
         for item in results:
             csv.writer(csvfile).writerow([item.attrib.get('aria-label')])
-            
+ 
 def find_in_maps_google():
     results = get_columns_of_csv(path_to_csv + 'municipios.csv', keys[1], keys[2])
     j = 0
@@ -110,7 +111,7 @@ def find_in_maps_google():
 
         coluna_escolas = browser.find_element(By.XPATH, "/html/body/div[3]/div[9]/div[9]/div/div/div[1]/div[2]/div/div[1]/div/div/div[2]/div[1]")
         
-        while not (NoSuchElementException): 
+        while (NoSuchElementException): 
             try:
                 if (browser.find_element(By.CSS_SELECTOR, ".HlvSq") is not None):
                     extract_info_by_maps_google()
