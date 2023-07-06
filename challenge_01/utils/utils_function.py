@@ -42,13 +42,22 @@ def get_columns_of_csv(filename, column1, column2):
         reader = csv.DictReader(stream, delimiter=",")
         for row in reader:
             yield row[column1] + ' ' + row[column2]
+
+def update_csv():
+    with open(path_to_csv + 'escolas_brasil_att.csv', 'a', newline='', encoding='utf-8') as csvfile:
+        for item in schools_list:
+            csv.writer(csvfile).writerow([item.name, item.adress, item.telephone])
             
+    with open(path_to_csv + 'escolas_nao_salva.csv', 'a', newline='', encoding='utf-8') as csvfile:
+        for item in schools_not_found:
+            csv.writer(csvfile).writerow([item])
+                      
 def google_search():
     i = 0
     for name in get_column_of_csv('./challenge_01/files/base_escolas_inep.csv', keys):
         schools.append(name)
         i += 1
-        if(i==3):
+        if(i==500):
             break
         
     for item in schools:
@@ -66,16 +75,16 @@ def google_search():
             schools_not_found.append(name)
 
 def generate_csv():
-    with open(path_to_csv + 'escolas_brasil_att.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    with open(path_to_csv + 'escolas_brasil_att.csv', 'a', newline='', encoding='utf-8') as csvfile:
         csv.writer(csvfile).writerow(["Nome da Escola", "Endereço", "Telefone", "Status"])
         for item in schools_list:
             csv.writer(csvfile).writerow([item.name, item.adress, item.telephone])
             
-    with open(path_to_csv + 'escolas_nao_salva.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    with open(path_to_csv + 'escolas_nao_salva.csv', 'a', newline='', encoding='utf-8') as csvfile:
         csv.writer(csvfile).writerow(["Nome da Escola"])
         for item in schools_not_found:
             csv.writer(csvfile).writerow([item])
-                    
+            
 def extract_info_by_maps_google():
     page_content = browser.page_source
     response = Selector(page_content)
@@ -95,21 +104,22 @@ def find_in_maps_google():
     for item in results:
         browser.find_element(By.ID, "searchboxinput").send_keys("escolas públicas em " + item + Keys.RETURN)
         time.sleep(2)
-        coluna_escolas = browser.find_element(By.XPATH, "/html/body/div[3]/div[9]/div[9]/div/div/div[1]/div[2]/div/div[1]/div/div/div[2]/div[1]")
 
-        while (NoSuchElementException): 
+        coluna_escolas = browser.find_element(By.XPATH, "/html/body/div[3]/div[9]/div[9]/div/div/div[1]/div[2]/div/div[1]/div/div/div[2]/div[1]")
+        
+        while not (NoSuchElementException): 
             try:
-                if not(browser.find_element(By.CSS_SELECTOR, ".HlvSq") is None):
+                if (browser.find_element(By.CSS_SELECTOR, ".HlvSq") is not None):
                     extract_info_by_maps_google()
                     break
             except NoSuchElementException:
                 coluna_escolas.send_keys(Keys.END)
-                time.sleep(2)
+                time.sleep(4)
             
         browser.find_element(By.ID, "searchboxinput").clear()
         
         j += 1
-        if (j==3):
+        if (j==500):
             break
         
 def search_school_founds_in_google_maps():
@@ -124,7 +134,6 @@ def search_school_founds_in_google_maps():
     for name in get_one_column_of_csv(path_to_csv + 'schools_found_google_maps.csv', 'Nome da Escola'):
         list_schools_google_maps.append(name)
         
-    # Necessario revisar
     count = 0
     for item_school_google_maps in list_schools_google_maps:
         for item_school_database in list_schools_database:
@@ -139,7 +148,7 @@ def search_school_founds_in_google_maps():
                 adress = browser.find_element(By.CSS_SELECTOR, ".LrzXr").text
                 telephone = browser.find_element(By.CSS_SELECTOR, '.zdqRlf').text
                 schools_list.append(schl(name=name, adress=adress, telephone=telephone))
-                #time.sleep(1)
+                time.sleep(3)
             except:
                 name = browser.find_element(By.XPATH, '//*[@id="APjFqb"]').text
                 schools_not_found.append(name)
@@ -148,7 +157,4 @@ def search_school_founds_in_google_maps():
         else:
             break
     
-    print(schools_list)
-    print(schools_not_found)
-                    
-
+    update_csv()
