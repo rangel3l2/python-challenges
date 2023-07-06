@@ -13,6 +13,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotInteractableException
+from selenium.common.exceptions import NoSuchWindowException
 
 srv = Service(ChromeDriverManager().install())
 browser = webdriver.Chrome(service=srv)
@@ -52,14 +53,16 @@ def update_csv():
         for item in schools_not_found:
             csv.writer(csvfile).writerow([item])
                       
-def google_search():
+def generate_array_schools():
     i = 0
     for name in get_column_of_csv('./challenge_01/files/base_escolas_inep.csv', keys):
         schools.append(name)
         i += 1
-        if(i==500):
+        if(i==15):
             break
-        
+    
+def google_search():
+    generate_array_schools()
     for item in schools:
         try:
             browser.get("https://www.google.com")
@@ -70,9 +73,9 @@ def google_search():
             telephone = browser.find_element(By.CSS_SELECTOR, '.zdqRlf').text
             schools_list.append(schl(name=name, adress=adress, telephone=telephone))
             time.sleep(3)
-        except:
-            name = browser.find_element(By.XPATH, '//*[@id="APjFqb"]').text
-            schools_not_found.append(name)
+        except NoSuchElementException:
+            schools_not_found.append(item)
+            time.sleep(3)
 
 def generate_csv():
     with open(path_to_csv + 'escolas_brasil_att.csv', 'a', newline='', encoding='utf-8') as csvfile:

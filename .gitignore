@@ -1,0 +1,5 @@
+# Not necessary folders
+
+/venv
+/challenge_01/models/__pycache__
+/challenge_01/utils/__pycache__
