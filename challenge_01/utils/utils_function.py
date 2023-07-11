@@ -10,22 +10,17 @@ from selenium.webdriver import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import ElementNotInteractableException
-from selenium.common.exceptions import NoSuchWindowException
 
 srv = Service(ChromeDriverManager().install())
 browser = webdriver.Chrome(service=srv)
 schl = sch.School
 
-
-path_to_csv = "./challenge_01/files/"
+path_to_csv = "files/"
 schools_list = []
 schools_not_found = []
-schools = []
+schools = [] 
 keys = ["Escola", "Município", "UF"]
-ximbinha = []
    
 def get_one_column_of_csv(filename, column1):
     with open(filename, "r", encoding='utf8') as stream:
@@ -33,7 +28,7 @@ def get_one_column_of_csv(filename, column1):
         for row in reader:
             yield row[column1]
             
-def get_column_of_csv(filename, column=[]):
+def get_all_columns_of_csv(filename, column=[]):
     with open(filename, "r", encoding='utf8') as stream:
         reader = csv.DictReader(stream, delimiter=";")
         for row in reader:
@@ -56,12 +51,12 @@ def update_csv():
                       
 def generate_array_schools():
     i = 0
-    for name in get_column_of_csv('./challenge_01/files/base_escolas_inep.csv', keys):
+    for name in get_all_columns_of_csv(path_to_csv + 'base_escolas_inep.csv', keys):
         schools.append(name)
         i += 1
         if(i==15):
             break
-    
+
 def google_search():
     generate_array_schools()
     for item in schools:
@@ -123,7 +118,7 @@ def find_in_maps_google():
         browser.find_element(By.ID, "searchboxinput").clear()
         
         j += 1
-        if (j==500):
+        if (j==15):
             break
         
 def search_school_founds_in_google_maps():
